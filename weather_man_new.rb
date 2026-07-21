@@ -108,5 +108,5 @@ if option == "-e"
 elsif option == "-a"
   monthly_stats(year, directory)
 else
-  puts "Error"
+  puts "No such option available"
 end
