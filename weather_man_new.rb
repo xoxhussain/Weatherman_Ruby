@@ -1,6 +1,3 @@
-require 'csv'
-
-
 option = ARGV[0]
 year = ARGV[1]
 directory = ARGV[2]
@@ -9,7 +6,11 @@ def avg(array)
   array.sum / array.size
 end
 
-
+def print_highest_data(highest_temp, lowest_temp, highest_humidity)
+  puts "Highest: #{highest_temp[:val]}°C on #{highest_temp[:date]}"
+  puts "Lowest: #{lowest_temp[:val]}°C on #{lowest_temp[:date]}"
+  puts "Humidity: #{highest_humidity[:val]}% on #{highest_humidity[:date]}"
+end
 
 def read_rows(line)
   parts = line.split(",")
@@ -23,90 +24,85 @@ def read_rows(line)
   }
 end
 
+def update_stats(data, highest_temp, lowest_temp, highest_humidity)
+  if data[:max_temp] > highest_temp[:val]
+    highest_temp[:val] = data[:max_temp]
+    highest_temp[:date] = data[:date]
+  end
+  if data[:min_temp] < lowest_temp[:val]
+    lowest_temp[:val] = data[:min_temp]
+    lowest_temp[:date] = data[:date]
+  end
+  if data[:max_humidity] > highest_humidity[:val]
+    highest_humidity[:val] = data[:max_humidity]
+    highest_humidity[:date] = data[:date]
+  end
+end
 
+def process_yearly_file(files, highest_temp, lowest_temp, highest_humidity)
+  files.each do |file|
+    File.foreach(file) do |line|
+      data = read_rows(line)
+      update_stats(data, highest_temp, lowest_temp, highest_humidity)
+    end
+  end
+end
 
 def yearly_stats(year, directory)
+  files = Dir.glob("#{directory}/**/*#{year}*.txt")
+  return puts "No data found." if files.empty?
+
   highest_temp = { val: -100, date: nil }
   lowest_temp = { val: 100, date: nil }
   highest_humidity = { val: -1, date: nil }
 
-   files = Dir.glob("#{directory}/**/*#{year}*.txt")
+  process_yearly_file(files, highest_temp, lowest_temp, highest_humidity)
 
-   if files.empty?
-   puts "No data found."
-   return
-   end
-
-   files.each do |file|
-   File.foreach(file) do |line|
-
-      data = read_rows(line)
-
-      if data[:max_temp] > highest_temp[:val]
-         highest_temp[:val] = data[:max_temp]
-         highest_temp[:date] = data[:date]
-      end
-
-      if data[:min_temp] < lowest_temp[:val]
-         lowest_temp[:val] = data[:min_temp]
-         lowest_temp[:date] = data[:date]
-      end
-
-      if data[:max_humidity] > highest_humidity[:val]
-         highest_humidity[:val] = data[:max_humidity]
-         highest_humidity[:date] = data[:date]
-      end
-
-   end
-   end
-   puts "Highest: #{highest_temp[:val]}°C on #{highest_temp[:date]}"
-   puts "Lowest: #{lowest_temp[:val]}°C on #{lowest_temp[:date]}"
-   puts "Humidity: #{highest_humidity[:val]}% on #{highest_humidity[:date]}"
+  print_highest_data(highest_temp, lowest_temp, highest_humidity)
 end
 
-
-
-
-
-def monthly_stats(year_month, directory)
-
-  files = Dir.glob("#{directory}/**/*#{year_month}*")
-
-  if files.empty?
-    puts "No data found."
-    return
-  end
-
+def collect_monthly_data(files)
   max_temps = []
   min_temps = []
   humidities = []
 
   files.each do |file|
     File.foreach(file) do |line|
-
       data = read_rows(line)
 
       max_temps << data[:max_temp]
       min_temps << data[:min_temp]
       humidities << data[:mean_humidity]
-
     end
   end
 
+  [max_temps, min_temps, humidities]
+end
+
+def print_monthly_stats(max_temps, min_temps, humidities)
   puts "Monthly Report"
   puts "Highest Average: #{avg(max_temps)}°C"
   puts "Lowest Average: #{avg(min_temps)}°C"
   puts "Average Humidity: #{avg(humidities)}%"
 end
 
+def monthly_stats(year_month, directory)
+  files = Dir.glob("#{directory}/**/*#{year_month}*.txt")
+  return puts("No data found.") if files.empty?
 
+  max_temps, min_temps, humidities = collect_monthly_data(files)
+  print_monthly_stats(max_temps, min_temps, humidities)
+end
 
-
-
-if option == "-e"
+case option
+when "-e"
   yearly_stats(year, directory)
-elsif option == "-a"
+when "-a"
   monthly_stats(year, directory)
+when "-c"
+  double_chart(year, directory)
+when "-s"
+  single_line(year, directory)
 else
-  puts "No such option available"
+  puts "Invalid options."
 end
