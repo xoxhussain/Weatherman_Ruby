@@ -3,14 +3,10 @@ def collect_monthly_data(files)
   min_temps = []
   humidities = []
 
-  files.each do |file|
-    File.foreach(file) do |line|
-      data = read_rows(line)
-
-      max_temps << data[:max_temp]
-      min_temps << data[:min_temp]
-      humidities << data[:mean_humidity]
-    end
+  process_files(files) do |data|
+    max_temps << data[:max_temp]
+    min_temps << data[:min_temp]
+    humidities << data[:mean_humidity]
   end
 
   [max_temps, min_temps, humidities]

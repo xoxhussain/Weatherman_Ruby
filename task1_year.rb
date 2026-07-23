@@ -14,11 +14,8 @@ def update_stats(data, highest_temp, lowest_temp, highest_humidity)
 end
 
 def process_yearly_file(files, highest_temp, lowest_temp, highest_humidity)
-  files.each do |file|
-    File.foreach(file) do |line|
-      data = read_rows(line)
-      update_stats(data, highest_temp, lowest_temp, highest_humidity)
-    end
+  process_files(files) do |data|
+    update_stats(data, highest_temp, lowest_temp, highest_humidity)
   end
 end
 
