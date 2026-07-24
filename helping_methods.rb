@@ -1,3 +1,7 @@
+RED = "\e[31m".freeze
+BLUE = "\e[34m".freeze
+RESET = "\e[0m".freeze
+
 def avg(array)
   return 0 if array.empty?
   array.sum / array.size
@@ -41,3 +45,6 @@ def get_months(year_month, directory)
   [files, year, month_name]
 end
 
+def color_result(color, result)
+  "#{color}#{result}#{RESET}"
+end
