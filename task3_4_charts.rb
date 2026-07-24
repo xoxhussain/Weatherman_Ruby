@@ -1,7 +1,3 @@
-RED = "\e[31m".freeze
-BLUE = "\e[34m".freeze
-RESET = "\e[0m".freeze
-
 def double_chart(year_month, directory)
   files, year, month_name = get_months(year_month, directory)
   return puts "No data found." if files.empty?
